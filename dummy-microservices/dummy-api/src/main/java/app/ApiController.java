@@ -1,13 +1,16 @@
 package app;
 
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.GetResponse;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -26,31 +29,22 @@ public class ApiController {
     public void add(@RequestParam("data") String data) throws IOException, TimeoutException {
         try (Connection connection = cf.newConnection(); Channel channel = connection.createChannel()) {
             channel.queueDeclare(QUEUE, false, false, false, null);
+            System.out.println("TEST");
             channel.basicPublish("", QUEUE, null, data.getBytes());
         }
+        System.out.println("TEST2");
     }
 
-    @GetMapping
+    @GetMapping("api/getAll")
     public List<String> getAll() throws IOException, TimeoutException {
-        try (Connection connection = cf.newConnection(); Channel channel = connection.createChannel()) {
-            channel.queueDeclare(QUEUE, false, false, false, null);
-            channel.basicPublish("", QUEUE, null, "GET".getBytes());
+        Connection connection = cf.newConnection();
+        Channel channel = connection.createChannel();
+        channel.queueDeclare(QUEUE, false, false, false, null);
+        channel.queueDeclare(DATA_QUEUE, false, false, false, null);
+        channel.basicPublish("", QUEUE, null, "GET".getBytes());
 
-            GetResponse response = channel.basicGet(QUEUE, true);
-            return Utils.bytesArrayToStringList(response.getBody());
-        }
-    }
+        GetResponse response = channel.basicGet(DATA_QUEUE, true);
+        return SerializationUtils.deserialize(response.getBody());
 
-    private static class DummyConsumer extends DefaultConsumer {
-        DummyConsumer(Channel channel) {
-            super(channel);
-        }
-
-        @Override
-        public void handleDelivery(String consumerTag, Envelope envelope,
-                                   AMQP.BasicProperties properties, byte[] body)
-                throws IOException {
-            String message = new String(body, "UTF-8");
-        }
     }
 }
