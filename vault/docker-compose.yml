@@ -15,7 +15,7 @@ services:
   vault:
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
-    image: 0.0.0.0:5000/proxvault:latest
+    image: 0.0.0.0:5000/concvault:latest
     container_name: concvault
     ports:
       - "8200:8200"

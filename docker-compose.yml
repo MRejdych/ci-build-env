@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq
+    restart: unless-stopped
+    ports:
+
+  redis:
+    image: redis
+    ports: ["8080:8080"]
+    restart: unless-stopped
+
+  dummy-api:
+    image: 0.0.0.0:5000/dummy-api:latest
+    container_name: api
+    ports:
+      - 8080:8080
+
+  dummy-data-converter:
+    image: 0.0.0.0:5000/dummy-data-converter:latest
+    container_name: data-converter
+
+  dummy-storage:
+    image: 0.0.0.0:5000/dummy-storage:latest
+    container_name: storage
