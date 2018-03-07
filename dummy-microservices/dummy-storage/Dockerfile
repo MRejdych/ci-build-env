@@ -1,4 +1,4 @@
 FROM openjdk:alpine
-COPY build/libs/dummy-storage-*.jar dummy-storage-*.jar
+COPY build/unzipDir/storage app/
 
-ENTRYPOINT java -jar dummy-storage-*.jar
+ENTRYPOINT /app/bin/storage

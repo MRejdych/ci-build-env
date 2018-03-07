@@ -1,4 +1,4 @@
 FROM openjdk:alpine
-COPY build/libs/dummy-data-converter-*.jar dummy-data-converter-*.jar
+COPY build/unzipDir/converter app/
 
-ENTRYPOINT java -jar dummy-data-converter-*.jar
+ENTRYPOINT /app/bin/converter

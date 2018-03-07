@@ -46,6 +46,12 @@ public class ApiController {
         channel.queueDeclare(STORAGE_QUEUE, false, false, false, null);
         channel.basicPublish("", STORAGE_QUEUE, null, SerializationUtils.serialize("GET"));
 
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         GetResponse response = channel.basicGet(DATA_QUEUE, true);
         return SerializationUtils.deserialize(response.getBody());
 

@@ -1,5 +1,6 @@
 FROM openjdk:alpine
-COPY build/libs/dummy-api-*.jar dummy-api-*.jar
+COPY build/unzipDir/api app/
+
 EXPOSE 8080
 
-ENTRYPOINT java -jar dummy-api-*.jar
+ENTRYPOINT /app/bin/api

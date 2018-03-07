@@ -4,22 +4,20 @@ services:
   rabbitmq:
     image: rabbitmq
     container_name: rabbitmq
-    restart: unless-stopped
-    ports:
-      - 5672:5672
+    restart: on-failure
 
   redis:
     image: redis
     container_name: redis
-    ports: ["8080:8080"]
-    restart: unless-stopped
-    ports:
-     - 6379:6379
+    restart: on-failure
 
   dummy-api:
-    image: 0.0.0.0:5000/dummy-api:latest
+    build: ./dummy-microservices/dummy-api
     container_name: api
-    restart: unless-stopped
+    restart: on-failure
+    depends_on:
+     - rabbitmq
+     - dummy-storage
     ports:
       - 8080:8080
     environment:
@@ -27,17 +25,23 @@ services:
       RABBITMQ_PORT: 5672
 
   dummy-data-converter:
-    image: 0.0.0.0:5000/dummy-data-converter:latest
+    build: ./dummy-microservices/dummy-data-converter
     container_name: data-converter
-    restart: unless-stopped
+    restart: on-failure
+    depends_on:
+     - rabbitmq
+     - dummy-storage
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
 
   dummy-storage:
-    image: 0.0.0.0:5000/dummy-storage:latest
+    build: ./dummy-microservices/dummy-storage
     container_name: storage
-    restart: unless-stopped
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - redis
     environment:
       REDIS_URL: http://redis:6379
       RABBITMQ_HOST: rabbitmq

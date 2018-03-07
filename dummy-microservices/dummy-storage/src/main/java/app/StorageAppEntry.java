@@ -5,6 +5,7 @@ import org.springframework.util.SerializationUtils;
 
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class StorageAppEntry {
@@ -43,8 +44,9 @@ public class StorageAppEntry {
 
             switch (message) {
                 case "GET":
-                    getChannel().basicPublish("", DATA_QUEUE, null, SerializationUtils.serialize(ds.getAll()));
-                    System.out.println("getAll");
+                    List<String> data = ds.getAll();
+                    getChannel().basicPublish("", DATA_QUEUE, null, SerializationUtils.serialize(data));
+                    System.out.println("getAll: " + data);
                     break;
                 default:
                     ds.store(message);
