@@ -3,24 +3,42 @@ version: '3'
 services:
   rabbitmq:
     image: rabbitmq
+    container_name: rabbitmq
     restart: unless-stopped
     ports:
+      - 5672:5672
 
   redis:
     image: redis
+    container_name: redis
     ports: ["8080:8080"]
     restart: unless-stopped
+    ports:
+     - 6379:6379
 
   dummy-api:
     image: 0.0.0.0:5000/dummy-api:latest
     container_name: api
+    restart: unless-stopped
     ports:
       - 8080:8080
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
 
   dummy-data-converter:
     image: 0.0.0.0:5000/dummy-data-converter:latest
     container_name: data-converter
+    restart: unless-stopped
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
 
   dummy-storage:
     image: 0.0.0.0:5000/dummy-storage:latest
     container_name: storage
+    restart: unless-stopped
+    environment:
+      REDIS_URL: http://redis:6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672

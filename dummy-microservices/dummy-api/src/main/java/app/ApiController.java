@@ -18,30 +18,33 @@ import java.util.concurrent.TimeoutException;
 public class ApiController {
     private static final String QUEUE = "dummyQ";
     private static final String DATA_QUEUE = "dummyDataQ";
+    private static final String STORAGE_QUEUE = "dummyStorageQ";
     private static final ConnectionFactory cf;
 
     static {
+        ConfigLoader configLoader = new ConfigLoader();
         cf = new ConnectionFactory();
-        cf.setHost("localhost");
+        cf.setHost(configLoader.rabbitmqHost);
+        cf.setPort(configLoader.rabbitmqPort);
     }
 
     @PostMapping("/api/add")
     public void add(@RequestParam("data") String data) throws IOException, TimeoutException {
         try (Connection connection = cf.newConnection(); Channel channel = connection.createChannel()) {
             channel.queueDeclare(QUEUE, false, false, false, null);
-            System.out.println("TEST");
+            System.out.println("Publishing to converter: " + data);
             channel.basicPublish("", QUEUE, null, data.getBytes());
         }
-        System.out.println("TEST2");
     }
 
     @GetMapping("api/getAll")
     public List<String> getAll() throws IOException, TimeoutException {
+        System.out.println("getAll");
         Connection connection = cf.newConnection();
         Channel channel = connection.createChannel();
-        channel.queueDeclare(QUEUE, false, false, false, null);
         channel.queueDeclare(DATA_QUEUE, false, false, false, null);
-        channel.basicPublish("", QUEUE, null, "GET".getBytes());
+        channel.queueDeclare(STORAGE_QUEUE, false, false, false, null);
+        channel.basicPublish("", STORAGE_QUEUE, null, SerializationUtils.serialize("GET"));
 
         GetResponse response = channel.basicGet(DATA_QUEUE, true);
         return SerializationUtils.deserialize(response.getBody());
